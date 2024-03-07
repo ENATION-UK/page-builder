@@ -1,0 +1,64 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>image2code</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container-fluid{
+            margin-top:30px;
+            height: 100%;
+
+        }
+        .container-fluid .row{
+            height: 100%;
+        }
+        .fixed-side {
+            width: 400px; /* Fixed width */
+            margin-left:10px;
+            border-right: 1px solid #cccccc;
+        }
+        .flex-grow-1 {
+            flex-grow: 1; /* Allow the right column to take up the remaining space */
+        }
+        .upload-area {
+            height: 300px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        .upload-area:hover {
+            border-color: #adb5bd;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-auto fixed-side bg-light">
+            <h3 class="card-title">Image to Code</h3>
+
+        </div>
+        <div class="col flex-grow-1 ">
+            <div class="upload-area mb-3">
+                Drag & drop a screenshot here,<br>
+                or paste from clipboard,<br>
+                or click to upload
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</body>
+</html>

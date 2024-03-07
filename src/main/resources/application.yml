@@ -1,0 +1,6 @@
+server:
+  tomcat:
+    max-swallow-size: 10MB
+
+image2code:
+  api-address: https://api.openai.com/v1/chat/completions
