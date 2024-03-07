@@ -1,6 +1,4 @@
 # image to code
 
-#### 介绍
-将图片转换为代码（HTML/Tailwind CSS、React、Bootstrap 或 Vue）。
-它使用 GPT-4 Vision 生成代码
-
+Converts a image to code (HTML/Tailwind CSS, or React or Bootstrap or Vue). 
+It uses GPT-4 Vision (or Claude 3) to generate the code
