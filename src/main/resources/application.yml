@@ -1,6 +1,9 @@
 server:
   tomcat:
     max-swallow-size: 10MB
+logging:
+  level:
+    com.enation: DEBUG # 替换为你自己的包名
 
 image2code:
   api-address: https://api.openai.com/v1/chat/completions

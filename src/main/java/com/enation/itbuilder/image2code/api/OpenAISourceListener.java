@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
+import org.springframework.util.StringUtils;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -28,6 +30,7 @@ public class OpenAISourceListener extends EventSourceListener {
     }
 
     private static ObjectMapper jsonObjMapper = new ObjectMapper();
+
 
     @Override
     public void onOpen(EventSource eventSource, Response response) {
@@ -56,7 +59,10 @@ public class OpenAISourceListener extends EventSourceListener {
         String content = contentNode.asText();
 
         try {
-            session.sendMessage(new TextMessage(content));
+            WsResponse success = WsResponse.builder().status("success").body(content).build();
+            String jsonString = jsonObjMapper.writeValueAsString(success);
+
+            session.sendMessage(new TextMessage(jsonString));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,8 +77,32 @@ public class OpenAISourceListener extends EventSourceListener {
 
     @Override
     public void onFailure(EventSource eventSource, Throwable t, Response response) {
-        // 连接失败时调用
-        log.error("onFailure", t);
+
+        ResponseBody responseBody = response.body();
+        if (responseBody != null) {
+            try {
+                String responseData = responseBody.string(); // 将响应体转为字符串
+
+                if (StringUtils.hasText(responseData)) {
+                    OpenAiError openAiError = jsonObjMapper.readValue(responseData, OpenAiError.class);
+
+                    WsResponse errorResponse = WsResponse.builder().status("errorResponse").body(openAiError.error.message).build();
+                    String jsonString = jsonObjMapper.writeValueAsString(errorResponse);
+
+                    session.sendMessage(new TextMessage(jsonString));
+                }
+                System.out.println(responseData);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+        if (t != null) {
+            log.error("onFailure", t);
+        }
+
     }
 
 
