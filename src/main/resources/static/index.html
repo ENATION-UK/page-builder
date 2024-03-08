@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 
-    <script src="image2code.js?v=2.0"></script>
+    <script src="image2code.js?v=2.4"></script>
     <style>
         body {
             /*background-color: #f8f9fa;*/
@@ -28,7 +28,6 @@
             margin-left: 10px;
             border-right: 1px solid #e5e7eb;
         }
-
 
 
         .flex-grow-1 {
@@ -73,7 +72,7 @@
             box-sizing: border-box;
         }
 
-        .dlg-footer{
+        .dlg-footer {
             display: flex;
             flex-shrink: 0;
             flex-wrap: wrap;
@@ -81,15 +80,16 @@
             justify-content: flex-end;
         }
 
-        .preview-block{
+        .preview-block {
             --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
             --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
             width: 90%;
             height: 90%;
             border: 2px solid #e5e7eb;
             display: none;
         }
+
         iframe {
             width: 100%;
             height: 100%;
@@ -98,7 +98,26 @@
         #imagePreview {
             display: none;
             width: 100%;
+            border: 1px solid #e5e7eb;
+            margin: 5px;
+        }
 
+        .menu {
+            display: none
+        }
+
+        .menu button {
+            margin: 5px;
+        }
+        .output{
+            display: none;
+            overflow-x: hidden;
+            white-space: nowrap;
+            margin: 5px;
+            background-color: black;
+            color: green;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -109,25 +128,44 @@
     <div class="row">
         <div class="col-auto fixed-side">
             <div class="header">
-                <h3 >Image to Code</h3>
+                <h3>Image to Code</h3>
                 <div class="settings-icon" data-bs-toggle="modal" data-bs-target="#settingModal">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                         class="bi bi-gear-fill" viewBox="0 0 16 16">
                         <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                     </svg>
                 </div>
             </div>
             <select class="form-select code-type">
-                <option selected>Bootstrap</option>
-                <option value="1">Vue + Tailwind</option>
-                <option value="2">Vue + Element UI</option>
-                <option value="1">React + Tailwind</option>
             </select>
 
-            <img id="imagePreview"    alt="Image preview...">
+            <div class="output">
+            </div>
+            <div class="menu">
+                <div class="d-flex ">
+                    <button class="btn btn-dark flex-grow-1" id="downloadBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-cloud-arrow-down-fill" viewBox="0 0 16 16">
+                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 6.854-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 9.293V5.5a.5.5 0 0 1 1 0v3.793l1.146-1.147a.5.5 0 0 1 .708.708"/>
+                        </svg>
+                        Download
+                    </button>
+                    <button class="btn btn-danger flex-grow-1" id="resetBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                  d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                            <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                        </svg>
+                        Reset
+                    </button>
+                </div>
+            </div>
+            <img id="imagePreview">
 
         </div>
         <div class="col flex-grow-1 ">
-            <div class="upload-area mb-3" >
+            <div class="upload-area mb-3">
                 Drag & drop a screenshot here,<br>
                 or paste from clipboard,<br>
                 or click to upload
@@ -141,7 +179,6 @@
 </div>
 
 
-
 <!-- Modal -->
 <div class="modal fade" tabindex="-1" id="settingModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -151,10 +188,13 @@
                     <div class="mb-3">
                         <label for="openaiKey" class="form-label">OpenAI API key</label>
                         <input type="text" class="form-control" id="openaiKey">
-                        <div  class="form-text">Only stored in your browser. Never stored on server</br>仅保存在客户端，不会在服务器端存储</div>
+                        <div class="form-text">Only stored in your browser. Never stored on server</br>
+                            仅保存在客户端，不会在服务器端存储
+                        </div>
                     </div>
                     <div class="dlg-footer">
-                        <button type="button" id="settingSaveBtn" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
+                        <button type="button" id="settingSaveBtn" class="btn btn-primary" data-bs-dismiss="modal">Save
+                        </button>
                     </div>
                 </form>
             </div>

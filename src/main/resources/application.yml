@@ -7,3 +7,5 @@ logging:
 
 image2code:
   api-address: https://api.openai.com/v1/chat/completions
+#  promptsLocation: file:/opt/image2code/prompts/
+  promptsLocation: classpath:/prompts/

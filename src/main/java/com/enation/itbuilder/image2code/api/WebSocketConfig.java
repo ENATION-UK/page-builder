@@ -19,9 +19,12 @@ public class WebSocketConfig  implements WebSocketConfigurer {
     @Value("${image2code.api-address}")
     private String apiAddress;
 
+    @Value("${image2code.promptsLocation:classpath:/prompts/}")
+    private String promptsLocation;
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new MyWebSocketHandler(apiAddress), "/ws").setAllowedOrigins("*");
+        registry.addHandler(new MyWebSocketHandler(apiAddress, promptsLocation), "/ws").setAllowedOrigins("*");
 
     }
 

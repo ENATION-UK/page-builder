@@ -8,8 +8,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSources;
-import org.apache.commons.io.IOUtils;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -22,21 +21,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MyWebSocketHandler extends TextWebSocketHandler {
 
+    public static final DefaultResourceLoader DEFAULT_RESOURCE_LOADER = new DefaultResourceLoader();
     private static ObjectMapper mapper = new ObjectMapper();
 
-    private String apiAddress ;
+    private static final Map<String, String> CODE_TYPES = Stream.of(CodeType.values())
+            .collect(Collectors.toMap(CodeType::toString, CodeType::getDisplayText));
+
+    private String apiAddress;
+
+    private final String promptsLocation;
 
     public MyWebSocketHandler(String apiAddress) {
+        this(apiAddress, "classpath:/prompts/");
+    }
+
+    public MyWebSocketHandler(String apiAddress, String promptsLocation) {
         this.apiAddress = apiAddress;
+        this.promptsLocation = promptsLocation;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        session.setBinaryMessageSizeLimit(10* 1024 * 1024);
+        session.setBinaryMessageSizeLimit(10 * 1024 * 1024);
         session.setTextMessageSizeLimit(10 * 1024 * 1024);
+
+        session.sendMessage(new TextMessage(mapper.writeValueAsString(Map.of(
+                "type", "initCodeTypes",
+                "data", CODE_TYPES
+        ))));
     }
 
     @Override
@@ -57,8 +74,7 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     }
 
 
-
-    public void sse(WebSocketSession session, GenerateParameter generateParameter) {
+    public void sse(WebSocketSession session, GenerateParameter generateParameter) throws Exception {
         OkHttpClient client = new OkHttpClient
                 .Builder()
                 .connectTimeout(100, TimeUnit.SECONDS)
@@ -69,12 +85,32 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
 
         mainMap.put("model", "gpt-4-vision-preview");
 
-        String prompt = readPrompt("vue.txt");
+        // 利用枚举验证codeType，因为会作为文件名，尽量避免被恶意攻击
+        CodeType codeType;
+        try {
+            codeType = CodeType.valueOf(generateParameter.getCodeType());
+        } catch (IllegalArgumentException e) {
+            session.sendMessage(new TextMessage("""
+                    { "success": false, "body": "Invalid code type" }
+                    """));
+            return;
+        }
+
+        //读取prompt文件，若读取失败给出友好提示
+        String prompt = null;
+        try {
+            prompt = readPrompt(codeType);
+        } catch (IOException e) {
+            session.sendMessage(new TextMessage("""
+                    { "success": false, "body": "Sorry that code type doesn't work right now. Please try another one." }
+                    """));
+            return;
+        }
 
         List<Map<String, Object>> messagesList = new ArrayList<>();
         Map<String, Object> message1 = new HashMap<>();
         message1.put("role", "system");
-        message1.put("content",prompt);
+        message1.put("content", prompt);
         messagesList.add(message1);
 
         Map<String, Object> message2 = new HashMap<>();
@@ -119,15 +155,11 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
 
         System.out.println("api req");
     }
-    public  String readPrompt(String name)  {
-        ClassPathResource resource = new ClassPathResource(name);
-        String content = null;
-        try {
-            content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return content;
+
+    public String readPrompt(CodeType codeType) throws IOException {
+        return DEFAULT_RESOURCE_LOADER
+                .getResource(promptsLocation + codeType.toString() + ".txt")
+                .getContentAsString(StandardCharsets.UTF_8);
     }
 }
 

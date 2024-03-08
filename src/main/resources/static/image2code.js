@@ -2,8 +2,40 @@
 var accumulatedHtml = ''; // 初始化累积的HTML
 var iframe ;
 
+function addContent(text) {
+    var $div = $('.output');
+    $div.text($div.text()+text);
+    $div.scrollLeft($div.prop('scrollWidth'));
+}
+function downloadHtml() {
+// 假设你的HTML内容存储在pageHtml变量中
+
+
+// 创建一个新的blob对象
+    var blob = new Blob([accumulatedHtml], {type: "text/html;charset=utf-8"});
+
+// 创建一个新的a元素
+    var a = document.createElement("a");
+
+// 使用URL.createObjectURL()方法创建一个指向blob的URL
+    a.href = URL.createObjectURL(blob);
+
+// 设置下载的文件名
+    a.download = "page.html";
+
+// 添加a元素到文档
+    document.body.appendChild(a);
+
+// 模拟点击a元素
+    a.click();
+
+// 移除a元素
+    document.body.removeChild(a);
+
+}
 function receiveHtmlChar(char) {
     accumulatedHtml += char; // 将新字符追加到累积的HTML中
+    addContent(char)
     if (accumulatedHtml.endsWith('>')) {
         updateIframeContent();
     }
@@ -36,20 +68,28 @@ const socket = new WebSocket(wsUrl);
 // 当连接成功建立的回调函数
 socket.onopen = function(event) {
     console.log('连接已开启：', event);
-    // 你可以在这里发送消息给服务器
-    // socket.send('你好，服务器！');
 };
 
 // 监听接收到的消息
 socket.onmessage = function(event) {
-    // console.log('接收到消息：', event.data);
-    var message = JSON.parse(event.data);
+    // console.log('接收到消息：', event);
+    const message = JSON.parse(event.data);
+    if (message.type === 'initCodeTypes') {
+        handleInitCodeTypes(message)
+        return
+    }
     if (message.status === 'success') {
+        $(".output").show();
         receiveHtmlChar( message.body);
-    }else {
-        alert(message.body);
+    }
+    if (message.status === 'complete') {
+        $(".menu").show();
+        $('.output').hide();
     }
 
+    if (message.status === 'error') {
+        alert(message.body);
+    }
 };
 
 // 监听错误事件
@@ -62,13 +102,39 @@ socket.onclose = function(event) {
     console.log('连接已关闭：', event);
 };
 
+function handleInitCodeTypes(message) {
+    console.log('handleInitCodeTypes:', message)
+    const selectEle = document.querySelector('select.code-type')
+    const codeTypes = message.data
+    if (codeTypes && Object.keys(codeTypes).length > 0) {
+        selectEle.innerHTML = ''
+        for (const key of Object.keys(codeTypes)) {
+            const opt = document.createElement('option')
+            opt.value = key
+            opt.innerHTML = codeTypes[key]
+            selectEle.appendChild(opt);
+        }
+    }
+}
 
 function sendMessage(base64String) {
+    const codeType = document.querySelector('select.code-type').value
+    if (!codeType) {
+        console.log('require code type')
+        alert('Please select the output code type')
+        return
+    }
     const apiKey = localStorage.getItem('openaiKey');
+    if (!apiKey) {
+        console.log('require OpenAI APIKey')
+        alert('Please set the OpenAI APIKey')
+        return
+    }
     // 创建一个对象
     const obj = {
         base64String: base64String,
-        apiKey: apiKey
+        apiKey: apiKey,
+        codeType: codeType
     };
     const jsonString = JSON.stringify(obj);
     socket.send(jsonString);
@@ -111,6 +177,32 @@ $(function (){
         localStorage.setItem('openaiKey', openaiKey);
 
     });
+
+
+    const myModalEl = document.getElementById('settingModal')
+    myModalEl.addEventListener('show.bs.modal', event => {
+        let openaiKey = localStorage.getItem('openaiKey');
+        $("#openaiKey").val(openaiKey);
+    })
+
+
+    $("#downloadBtn").click(function (){
+        downloadHtml();
+    });
+
+
+    $("#resetBtn").click(function (){
+        $(".menu").hide();
+        $('.output').hide();
+
+        $(".upload-area").show();
+        $(".preview-block").hide()
+        $("#imagePreview").hide().attr("src","")
+        iframe.src = iframe.src;
+    });
+
+
+
 
 
 });

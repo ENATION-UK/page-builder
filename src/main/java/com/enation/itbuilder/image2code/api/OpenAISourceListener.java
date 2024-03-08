@@ -15,6 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 
 /**
+ * OpenAI事件监听
  * @author kingapex
  * @version 1.0
  * @data 2022/12/23 12:02
@@ -25,8 +26,8 @@ public class OpenAISourceListener extends EventSourceListener {
 
     private WebSocketSession session;
 
-    public OpenAISourceListener( WebSocketSession session) {
-       this.session = session;
+    public OpenAISourceListener(WebSocketSession session) {
+        this.session = session;
     }
 
     private static ObjectMapper jsonObjMapper = new ObjectMapper();
@@ -41,6 +42,15 @@ public class OpenAISourceListener extends EventSourceListener {
     @Override
     public void onEvent(EventSource eventSource, String id, String type, String data) {
         if ("[DONE]".equals(data)) {
+
+            try {
+                WsResponse complete = WsResponse.builder().status("complete").body("success").build();
+                String jsonString = jsonObjMapper.writeValueAsString(complete);
+
+                session.sendMessage(new TextMessage(jsonString));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             return;
         }
 
@@ -86,7 +96,7 @@ public class OpenAISourceListener extends EventSourceListener {
                 if (StringUtils.hasText(responseData)) {
                     OpenAiError openAiError = jsonObjMapper.readValue(responseData, OpenAiError.class);
 
-                    WsResponse errorResponse = WsResponse.builder().status("errorResponse").body(openAiError.error.message).build();
+                    WsResponse errorResponse = WsResponse.builder().status("error").body(openAiError.error.message).build();
                     String jsonString = jsonObjMapper.writeValueAsString(errorResponse);
 
                     session.sendMessage(new TextMessage(jsonString));

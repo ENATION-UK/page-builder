@@ -17,5 +17,6 @@ public class GenerateParameter {
     //openai apikey
     private String apiKey;
 
+    private String codeType;
 
 }
