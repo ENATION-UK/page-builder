@@ -58,11 +58,17 @@ function updateIframeContent() {
     }
 }
 
+function receiveAnalysis(text) {
+    let item = $(".page-analysis .detail-item");
+    item.append(text)
+    item.scrollTop(item[0].scrollHeight);
+
+}
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const host = window.location.host; // 包括域名和端口（如果有）
 
 // 构建WebSocket的URL
-const wsUrl = `${protocol}//${host}/ws/image`;
+const wsUrl = `${protocol}//${host}/ws/text`;
 
 // 创建WebSocket连接
 const socket = new WebSocket(wsUrl);
@@ -81,18 +87,43 @@ socket.onmessage = function(event) {
         handleInitCodeTypes(message)
         return
     }
-    if (message.status === 'success') {
-        $(".output").show();
-        receiveHtmlChar( message.body);
-    }
-    if (message.status === 'complete') {
-        $(".menu").show();
-        $('.output').hide();
+
+    let $chat = $("#chat-content");
+    $chat.scrollTop($chat[0].scrollHeight);
+
+    if (message.type === 'analysis') {
+
+        if (message.status === 'success') {
+            $(".page-analysis").show();
+            receiveAnalysis(message.body);
+        }
+
+        if (message.status === 'complete') {
+            sendMessage('create')
+
+            $(".ai-tip-coding").show();
+            $(".output").show();
+
+        }
+
     }
 
-    if (message.status === 'error') {
-        alert(message.body);
+    if (message.type === 'create') {
+        if (message.status === 'success') {
+            receiveHtmlChar(message.body);
+        }
+
+        if (message.status === 'complete') {
+
+            $(".menu").show();
+        }
+
+        if (message.status === 'error') {
+            alert(message.body);
+        }
     }
+
+
 };
 
 // 监听错误事件
@@ -120,7 +151,7 @@ function handleInitCodeTypes(message) {
     }
 }
 
-function sendMessage(base64String) {
+function sendMessage( actionType) {
     const codeType = document.querySelector('select.code-type').value
     if (!codeType) {
         console.log('require code type')
@@ -133,14 +164,40 @@ function sendMessage(base64String) {
         alert('Please set the OpenAI APIKey')
         return
     }
-    // 创建一个对象
-    const obj = {
-        base64String: base64String,
+
+
+    // 创建一个空对象来存储表单数据
+    let formData = {
+        industry: document.getElementById('industry').value,
+        pageType: document.getElementById('pageType').value,
+        business: document.getElementById('business').value,
+        features: document.getElementById('features').value,
         apiKey: apiKey,
-        codeType: codeType
+        codeType: codeType,
+        actionType: actionType
     };
-    const jsonString = JSON.stringify(obj);
-    socket.send(jsonString);
+
+    if (actionType === 'create') {
+        formData.analysisResult=$(".page-analysis .detail-item").text();
+    }
+
+
+    // 将对象转换为JSON字符串
+    let jsonStr = JSON.stringify(formData);
+
+    if (actionType === 'analysis') {
+        $("span.industry").text(formData.industry);
+        $("span.pageType").text(formData.pageType);
+        $("span.business").text(formData.business);
+        $("span.features").text(formData.features);
+
+        $(".form-req").hide();
+        $(".base-req").show();
+        $(".ai-tip-analysis").show();
+
+    }
+
+    socket.send(jsonStr);
 
     $(".upload-area").hide();
     $(".preview-block").show()
@@ -151,11 +208,6 @@ function sendMessage(base64String) {
 $(function (){
 
     iframe = document.getElementById('preview');
-
-    // 当点击 uploadArea 时触发 fileInput 的 click 事件
-    $('.upload-area').on('click', function() {
-        $('#fileInput').click();
-    });
 
 
     document.getElementById('fileInput').addEventListener('change', function() {
@@ -187,6 +239,11 @@ $(function (){
 
     });
 
+    $("#createBtn").click(function (){
+        sendMessage("analysis")
+
+    });
+
 
     const myModalEl = document.getElementById('settingModal')
     myModalEl.addEventListener('show.bs.modal', event => {
@@ -214,9 +271,6 @@ $(function (){
         // Reset the file input
         document.getElementById('fileInput').value = ''
     });
-
-
-
 
 
 });

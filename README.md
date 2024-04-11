@@ -1,29 +1,35 @@
 # image to code
 
-## 介绍
-将图片转换为代码（HTML/Tailwind CSS、React、Bootstrap 或 Vue）。
-它使用 GPT-4 Vision 生成代码
+## Introduction
+PageBuilder can generate Html pages with the help of AI
+- Text to page: Analyzes customer requirements based on the demand text and generates pages.
+- Image to page: Converts images into pages.
+It uses GPT-4 Vision to generate code.
+## Demo
 
-## 使用
-### 在线体验
+![demo](demo.mp4.gif)
 
-[http://image2code.itbuilder.cn:7008/](http://image2code.itbuilder.cn:7008/)
+## Usage
+### Online Experience
 
-### 本地运行
+[http://image2code.itbuilder.cn:7008/text2page](http://image2code.itbuilder.cn:7008/text2page)
+
+### Run Locally
 ```shell
 mvn install
-java -jar target/image-to-code-1.0-SNAPSHOT.jar
+java -jar target/page-builder-1.0.0.jar
 ```
-访问
+Visit
 ```
-http://localhost:8080
+http://localhost:8080/text2page
 ```
-### 设置openai api key
+### Set up OpenAI API key
 
 ![setting.png](setting.png)
 
-点击设置，设置openai api key
+Click settings to configure the OpenAI API key.
+ **The API key needs to have access to GPT-4** 
 
-### 上传图片
+### Upload Image
 ![upload.png](upload.png)
-上传图片后gpt的Vision会识别图像并生成代码
+After uploading the image, GPT's Vision will recognize the image and generate code.

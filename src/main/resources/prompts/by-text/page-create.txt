@@ -1,0 +1,6 @@
+- 所处行业: ${pageSetting.industry}
+- 页面类型: ${pageSetting.pageType}
+- 板块规划: ${pageSetting.sectionPlanning}
+- 颜色: ${pageSetting.color}
+- 风格:${pageSetting.sectionPlanning}
+- 其他需求: ${pageSetting.sectionPlanning}

@@ -16,7 +16,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 public class WebSocketConfig  implements WebSocketConfigurer {
 
-    @Value("${image2code.api-address}")
+    @Value("${image2code.api-address:}")
     private String apiAddress;
 
     @Value("${image2code.promptsLocation:classpath:/prompts/}")
@@ -24,7 +24,8 @@ public class WebSocketConfig  implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new MyWebSocketHandler(apiAddress, promptsLocation), "/ws").setAllowedOrigins("*");
+        registry.addHandler(new Image2PageSocketHandler(apiAddress, promptsLocation), "/ws/image").setAllowedOrigins("*");
+        registry.addHandler(new Text2PageSocketHandler(apiAddress), "/ws/text").setAllowedOrigins("*");
 
     }
 

@@ -5,7 +5,8 @@ logging:
   level:
     com.enation: DEBUG # 替换为你自己的包名
 
+
 image2code:
-  api-address: https://api.openai.com/v1/chat/completions
+#  api-address: https://api.openai.com/v1/chat/completions
 #  promptsLocation: file:/opt/image2code/prompts/
   promptsLocation: classpath:/prompts/

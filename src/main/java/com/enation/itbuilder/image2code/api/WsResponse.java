@@ -15,4 +15,5 @@ import lombok.Data;
 public class WsResponse {
     private String status;
     private String body;
+    private String type;
 }
